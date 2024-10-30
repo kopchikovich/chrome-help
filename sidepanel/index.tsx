@@ -1,3 +1,4 @@
+import Markdown from 'markdown-to-jsx'
 import React, { useEffect, useState } from 'react'
 
 import './index.css'
@@ -67,6 +68,16 @@ const App = () => {
     }
   }
 
+  const handleLinkClick = (event) => {
+    const url = event.target.getAttribute('href')
+
+    if (url && url.startsWith('chrome://')) {
+      event.preventDefault() // Предотвращаем стандартное поведение
+
+      chrome.runtime.sendMessage({ action: 'openChromeUrl', url })
+    }
+  }
+
   return (
     <div>
       <h1>Chrome built-in AI</h1>
@@ -92,12 +103,27 @@ const App = () => {
       )}
       {response && (
         <div className="text">
-          {response.split(/\r?\n/).map((paragraph, index) => (
-            <React.Fragment key={index}>
-              {paragraph}
-              <br />
-            </React.Fragment>
-          ))}
+          <Markdown
+            options={{
+              overrides: {
+                a: {
+                  component: ({ href, children, ...props }) => (
+                    <a
+                      {...props}
+                      href={href}
+                      onClick={(e) => {
+                        if (href.startsWith('chrome://')) {
+                          handleLinkClick(e)
+                        }
+                      }}>
+                      {children}
+                    </a>
+                  ),
+                },
+              },
+            }}>
+            {response}
+          </Markdown>
         </div>
       )}
       {error && <div className="text">{error}</div>}
