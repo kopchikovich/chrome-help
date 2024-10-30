@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 
 import './index.css'
 
+import { systemPrompt } from '~systemPrompt'
+
 declare global {
   interface Window {
     ai: any
@@ -30,7 +32,7 @@ const App = () => {
     try {
       let currentSession = session
       if (!currentSession) {
-        currentSession = await window.ai.languageModel.create()
+        currentSession = await window.ai.languageModel.create({ systemPrompt })
         setSession(currentSession)
       }
       return currentSession.prompt(prompt)
@@ -69,7 +71,7 @@ const App = () => {
     <div>
       <h1>Chrome built-in AI</h1>
       <textarea
-        placeholder='Type something, e.g. "Write a haiku about Chrome Extensions"'
+        placeholder='Type something, e.g. "How can I clear my cache?"'
         cols={30}
         rows={5}
         value={prompt}
