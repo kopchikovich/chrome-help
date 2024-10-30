@@ -32,10 +32,15 @@ const App = () => {
   const runPrompt = async (prompt: string) => {
     try {
       let currentSession = session
-      if (!currentSession) {
+      if (!session) {
+        currentSession = await window.ai.languageModel.create({ systemPrompt })
+        setSession(currentSession)
+      } else if (session.countPromptTokens(prompt) > session.tokensLeft) {
+        await session.destroy()
         currentSession = await window.ai.languageModel.create({ systemPrompt })
         setSession(currentSession)
       }
+
       return currentSession.prompt(prompt)
     } catch (e) {
       console.error('Prompt failed', e)
@@ -80,22 +85,25 @@ const App = () => {
 
   return (
     <div>
-      <h1>Chrome built-in AI</h1>
+      <h1>Chrome Help</h1>
       <textarea
         placeholder='Type something, e.g. "How can I clear my cache?"'
         cols={30}
         rows={5}
         value={prompt}
+        maxLength={1000}
         onChange={(e) => setPrompt(e.target.value)}></textarea>
-      <button
-        className="primary"
-        disabled={!prompt.trim()}
-        onClick={handleRunPrompt}>
-        Run
-      </button>
-      <button className="secondary" disabled={!session} onClick={reset}>
-        Reset
-      </button>
+      <div className="buttons">
+        <button
+          className="primary"
+          disabled={!prompt.trim()}
+          onClick={handleRunPrompt}>
+          Ask
+        </button>
+        <button className="secondary" disabled={!session} onClick={reset}>
+          Reset
+        </button>
+      </div>
       {loading && (
         <div className="text">
           <span className="blink">...</span>
